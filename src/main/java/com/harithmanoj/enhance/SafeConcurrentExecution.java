@@ -33,7 +33,7 @@ public class SafeConcurrentExecution<V> {
     private boolean _isExecutingMutable = false;
     private final Object _executorMetaSyncObject = new Object();
 
-    SafeConcurrentExecution() {}
+    public SafeConcurrentExecution() {}
 
     public void waitForSync() throws Exception {
         for(Future<V> f : _executingFutures)
