@@ -35,26 +35,40 @@ public class SafeConcurrentExecution<V> {
 
     SafeConcurrentExecution() {}
 
+    public void waitForSync() throws Exception {
+        for(Future<V> f : _executingFutures)
+            f.get();
+    }
+
     public Future<V> postTask(final Callable<V> fn, final boolean isMutable) {
         if(isMutable || _isExecutingMutable) {
             return _concurrentExecutor.submit(
                     new Callable<V>() {
                         @Override
                         public V call() throws Exception {
-                            for(Future<V> f : _executingFutures) {
-                                    f.get();
+
+                            synchronized (_executingFutures) {
+                                waitForSync();
+                                _executingFutures.clear();
                             }
-                            _executingFutures.clear();
-                            Future<V> ret = _concurrentExecutor.submit(fn);
-                            _executingFutures.add(ret);
-                            _isExecutingMutable = isMutable;
+                            Future<V> ret = null;
+                            synchronized (_executorMetaSyncObject) {
+                                ret = _concurrentExecutor.submit(fn);
+                                _executingFutures.add(ret);
+                                _isExecutingMutable = isMutable;
+                            }
                             return ret.get();
                         }
                     }
             );
         } else {
-            Future<V> ret =  _concurrentExecutor.submit(fn);
-            _executingFutures.add(ret);
+            Future<V> ret = null;
+            synchronized (_executorMetaSyncObject) {
+                ret = _concurrentExecutor.submit(fn);
+            }
+            synchronized (_executingFutures) {
+                _executingFutures.add(ret);
+            }
             return ret;
         }
 
