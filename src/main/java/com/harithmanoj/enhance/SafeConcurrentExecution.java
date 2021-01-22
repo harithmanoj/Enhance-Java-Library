@@ -17,5 +17,26 @@
    
 package com.harithmanoj.enhance;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 public class SafeConcurrentExecution {
+
+    private static final int EXECUTOR_THREADS = 8;
+    private final ExecutorService _concurrentExecutor = Executors.newFixedThreadPool(EXECUTOR_THREADS);
+
+    private final List<Future<?>> _executingFutures = new ArrayList<>();
+    private boolean _isExecutingMutable = false;
+    private final Object _executorMetaSyncObject = new Object();
+
+    SafeConcurrentExecution() {}
+
+    public Future<?> postTask(final Callable<?> fn, final boolean isMutable, final ExceptionCallback errorCallback) {
+
+    }
+
 }
